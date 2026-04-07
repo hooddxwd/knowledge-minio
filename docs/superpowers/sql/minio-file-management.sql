@@ -1,0 +1,70 @@
+-- MinIO 文件管理系统数据库脚本
+
+-- 文件夹表
+CREATE TABLE IF NOT EXISTS `minio_folder` (
+  `id` varchar(36) NOT NULL COMMENT '主键',
+  `folder_name` varchar(200) NOT NULL COMMENT '文件夹名称（Bucket名，英文/数字/短横线）',
+  `display_name` varchar(200) NOT NULL COMMENT '显示名称（中文等任意字符）',
+  `description` varchar(500) DEFAULT NULL COMMENT '文件夹描述',
+  `create_by` varchar(50) DEFAULT NULL COMMENT '创建人',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(50) DEFAULT NULL COMMENT '更新人',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_folder_name` (`folder_name`),
+  UNIQUE KEY `uk_display_name` (`display_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MinIO文件夹';
+
+-- 文件表
+CREATE TABLE IF NOT EXISTS `minio_file` (
+  `id` varchar(36) NOT NULL COMMENT '主键',
+  `folder_id` varchar(36) NOT NULL COMMENT '关联文件夹ID',
+  `file_name` varchar(500) NOT NULL COMMENT '文档名称',
+  `classification_level` varchar(50) DEFAULT '公开' COMMENT '文档密级',
+  `summary` text COMMENT '摘要',
+  `author` varchar(200) DEFAULT NULL COMMENT '作者',
+  `tech_system` varchar(200) DEFAULT NULL COMMENT '技术体系',
+  `doc_type` varchar(100) DEFAULT NULL COMMENT '文档类型',
+  `doc_source` varchar(200) DEFAULT NULL COMMENT '文档来源',
+  `year` varchar(10) DEFAULT NULL COMMENT '年度',
+  `file_size` bigint DEFAULT NULL COMMENT '文件大小（字节）',
+  `file_type` varchar(100) DEFAULT NULL COMMENT 'MIME类型',
+  `minio_object_name` varchar(500) NOT NULL COMMENT 'MinIO中的对象名',
+  -- 标签字段（平铺）
+  `report_task_source` varchar(200) DEFAULT NULL COMMENT '科技报告-任务来源/渠道',
+  `report_model` varchar(200) DEFAULT NULL COMMENT '科技报告-型号',
+  `report_major` varchar(200) DEFAULT NULL COMMENT '科技报告-专业',
+  `report_category` varchar(200) DEFAULT NULL COMMENT '科技报告-类别',
+  `std_level` varchar(200) DEFAULT NULL COMMENT '标准规范-标准层次',
+  `std_field` varchar(200) DEFAULT NULL COMMENT '标准规范-标准领域',
+  `std_civil_military` varchar(200) DEFAULT NULL COMMENT '标准规范-军民属性',
+  `std_aircraft_type` varchar(200) DEFAULT NULL COMMENT '标准规范-适用航空器类型',
+  `std_type` varchar(200) DEFAULT NULL COMMENT '标准规范-标准类型',
+  `news_type` varchar(200) DEFAULT NULL COMMENT '新闻资讯-新闻类型',
+  `news_major` varchar(200) DEFAULT NULL COMMENT '新闻资讯-新闻专业',
+  `rule_domain` varchar(200) DEFAULT NULL COMMENT '规章制度-业务域',
+  `rule_level` varchar(200) DEFAULT NULL COMMENT '规章制度-制度等级',
+  `rule_dept` varchar(200) DEFAULT NULL COMMENT '规章制度-主责部门',
+  `journal_db` varchar(200) DEFAULT NULL COMMENT '期刊文献-来源数据库',
+  `journal_subject` varchar(200) DEFAULT NULL COMMENT '期刊文献-学科',
+  `journal_level` varchar(200) DEFAULT NULL COMMENT '期刊文献-论文级别',
+  `journal_industry` varchar(200) DEFAULT NULL COMMENT '期刊文献-行业分类',
+  `doc_from_unit` varchar(200) DEFAULT NULL COMMENT '行政公文-来文单位',
+  `doc_host_unit` varchar(200) DEFAULT NULL COMMENT '行政公文-主办单位',
+  `doc_drafter` varchar(200) DEFAULT NULL COMMENT '行政公文-拟稿人',
+  `doc_draft_dept` varchar(200) DEFAULT NULL COMMENT '行政公文-拟稿部门',
+  `ip_patent_inventor` varchar(200) DEFAULT NULL COMMENT '知识产权-专利发明人',
+  `ip_patent_applicant` varchar(200) DEFAULT NULL COMMENT '知识产权-专利申请人',
+  `ip_achievement_declarant` varchar(200) DEFAULT NULL COMMENT '知识产权-所级申报人',
+  `ip_achievement_completer` varchar(200) DEFAULT NULL COMMENT '知识产权-所级主要完成人',
+  `ip_soft_dev_list` varchar(200) DEFAULT NULL COMMENT '知识产权-软著开发人列表',
+  `ip_soft_representative` varchar(200) DEFAULT NULL COMMENT '知识产权-著作权人代表',
+  -- 审计字段
+  `create_by` varchar(50) DEFAULT NULL COMMENT '创建人/上传人',
+  `create_time` datetime DEFAULT NULL COMMENT '上传时间',
+  `update_by` varchar(50) DEFAULT NULL COMMENT '更新人',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_folder_id` (`folder_id`),
+  KEY `idx_doc_type` (`doc_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MinIO文件';

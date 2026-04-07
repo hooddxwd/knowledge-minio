@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文件管理 - 高级原型 v4</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background:#f0f2f5; color:rgba(0,0,0,0.65); }
+
+  /* 操作栏 - 白底蓝色按钮，符合 Ant Design 风格 */
+  .action-bar { background:#fff; border-bottom:1px solid #e8e8e8; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; }
+  .action-bar .breadcrumb { font-size:14px; color:rgba(0,0,0,0.45); display:flex; align-items:center; gap:8px; }
+  .action-bar .breadcrumb a { color:rgba(0,0,0,0.45); text-decoration:none; }
+  .action-bar .breadcrumb a:hover { color:#1890ff; }
+  .action-bar .breadcrumb .current { color:rgba(0,0,0,0.85); font-weight:500; }
+  .action-bar .stats { display:flex; align-items:center; gap:20px; font-size:13px; color:rgba(0,0,0,0.45); }
+  .action-bar .stats .count { font-size:18px; font-weight:600; color:#1890ff; }
+  .action-bar .stats .unit { font-size:12px; margin-left:2px; }
+  .action-bar .actions { display:flex; gap:8px; }
+  .btn { padding:5px 16px; border-radius:4px; font-size:13px; cursor:pointer; border:1px solid #d9d9d9; background:#fff; color:rgba(0,0,0,0.65); transition:all .2s; display:inline-flex; align-items:center; gap:4px; height:32px; }
+  .btn:hover { border-color:#40a9ff; color:#40a9ff; }
+  .btn-primary { background:#1890ff; color:#fff; border-color:#1890ff; }
+  .btn-primary:hover { background:#40a9ff; border-color:#40a9ff; color:#fff; }
+
+  /* 主布局 */
+  .main-layout { display:flex; height:calc(100vh - 56px); }
+
+  /* 左侧筛选面板 */
+  .sidebar { width:260px; background:#fff; border-right:1px solid #e8e8e8; overflow-y:auto; flex-shrink:0; }
+  .sidebar::-webkit-scrollbar { width:4px; }
+  .sidebar::-webkit-scrollbar-thumb { background:#ddd; border-radius:2px; }
+  .sidebar-header { padding:14px 20px 12px; font-size:14px; font-weight:500; color:rgba(0,0,0,0.85); border-bottom:1px solid #f0f0f0; display:flex; align-items:center; justify-content:space-between; }
+  .sidebar-header .clear { font-size:12px; color:#1890ff; cursor:pointer; font-weight:400; }
+  .tag-group { border-bottom:1px solid #f5f5f5; }
+  .tag-group-title { padding:9px 20px; font-size:13px; font-weight:500; color:#1890ff; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background .15s; user-select:none; }
+  .tag-group-title:hover { background:#fafafa; }
+  .tag-group-title .arrow { font-size:10px; color:#999; transition:transform .2s; }
+  .tag-group-title.collapsed .arrow { transform:rotate(-90deg); }
+  .tag-field { padding:3px 20px 3px 32px; font-size:12px; color:rgba(0,0,0,0.45); cursor:pointer; transition:all .15s; }
+  .tag-field:hover { color:#1890ff; background:#e6f7ff; }
+  .tag-field.active { color:#1890ff; font-weight:500; }
+  .tag-value { padding:2px 20px 2px 48px; font-size:12px; color:rgba(0,0,0,0.45); cursor:pointer; transition:all .15s; position:relative; }
+  .tag-value:hover { color:#1890ff; background:#e6f7ff; }
+  .tag-value::before { content:''; position:absolute; left:38px; top:50%; width:4px; height:4px; border-radius:50%; background:#d9d9d9; transform:translateY(-50%); transition:background .15s; }
+  .tag-value:hover::before, .tag-value.active::before { background:#1890ff; }
+  .tag-value.active { color:#1890ff; font-weight:500; }
+  .tag-value .count { font-size:11px; color:rgba(0,0,0,0.25); margin-left:4px; }
+
+  /* 右侧内容区 */
+  .content { flex:1; overflow-y:auto; padding:20px 24px; }
+  .content::-webkit-scrollbar { width:6px; }
+  .content::-webkit-scrollbar-thumb { background:#ddd; border-radius:3px; }
+
+  /* 搜索和筛选栏 */
+  .search-bar { display:flex; gap:10px; margin-bottom:16px; align-items:center; }
+  .search-input { flex:1; position:relative; }
+  .search-input input { width:100%; padding:6px 12px 6px 34px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; outline:none; transition:all .2s; background:#fff; height:32px; }
+  .search-input input:focus { border-color:#40a9ff; box-shadow:0 0 0 2px rgba(24,144,255,0.2); }
+  .search-input input::placeholder { color:rgba(0,0,0,0.25); }
+  .search-input .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:rgba(0,0,0,0.25); font-size:13px; }
+  .filter-select { padding:0 28px 0 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; outline:none; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%23bfbfbf' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center; appearance:none; cursor:pointer; transition:all .2s; height:32px; color:rgba(0,0,0,0.65); }
+  .filter-select:focus { border-color:#40a9ff; box-shadow:0 0 0 2px rgba(24,144,255,0.2); }
+
+  /* 活跃筛选标签 */
+  .active-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .filter-tag { display:inline-flex; align-items:center; gap:4px; padding:1px 8px; background:#e6f7ff; border:1px solid #91d5ff; border-radius:4px; font-size:12px; color:#1890ff; line-height:22px; }
+  .filter-tag .remove { cursor:pointer; font-size:12px; line-height:1; margin-left:2px; opacity:0.6; color:#1890ff; }
+  .filter-tag .remove:hover { opacity:1; }
+
+  /* 文件卡片 - 统一白底无边框色，Ant Design 卡片风格 */
+  .file-card { background:#fff; border-radius:2px; margin-bottom:12px; transition:all .25s; border:1px solid #f0f0f0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+  .file-card:hover { box-shadow:0 2px 8px rgba(0,0,0,0.09); border-color:#e8e8e8; }
+  .file-card-inner { padding:16px 20px; display:flex; gap:16px; }
+  .file-card-body { flex:1; min-width:0; }
+  .file-card-meta { display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+  .badge { display:inline-flex; align-items:center; padding:0 8px; height:22px; border-radius:4px; font-size:12px; font-weight:400; line-height:22px; border:1px solid; }
+  .badge-type { background:#e6f7ff; color:#1890ff; border-color:#91d5ff; }
+  .badge-public { background:#f6ffed; color:#52c41a; border-color:#b7eb8f; }
+  .file-year { font-size:12px; color:rgba(0,0,0,0.25); }
+  .file-card-title { font-size:14px; font-weight:500; color:rgba(0,0,0,0.85); margin-bottom:4px; line-height:22px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; transition:color .2s; }
+  .file-card-title:hover { color:#1890ff; }
+  .file-card-info { font-size:12px; color:rgba(0,0,0,0.45); margin-bottom:6px; display:flex; gap:16px; flex-wrap:wrap; }
+  .file-card-info span { display:inline-flex; align-items:center; gap:4px; }
+  .file-card-info .sep { color:#e8e8e8; }
+  .file-card-abstract { font-size:13px; color:rgba(0,0,0,0.45); line-height:22px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:8px; }
+  .file-card-tags { display:flex; gap:6px; flex-wrap:wrap; }
+  .pill { display:inline-block; padding:0 8px; height:20px; background:#fafafa; border:1px solid #f0f0f0; border-radius:4px; font-size:12px; color:rgba(0,0,0,0.65); line-height:20px; transition:all .15s; cursor:pointer; }
+  .pill:hover { color:#1890ff; border-color:#91d5ff; background:#e6f7ff; }
+
+  /* 文件图标区域 */
+  .file-card-side { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:68px; padding-top:6px; }
+  .file-icon { width:44px; height:52px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid #f0f0f0; background:#fafafa; }
+  .file-size { font-size:11px; color:rgba(0,0,0,0.25); margin-top:6px; }
+
+  /* 卡片底部操作 */
+  .file-card-actions { padding:6px 20px; border-top:1px solid #f5f5f5; display:flex; justify-content:flex-end; gap:2px; opacity:0; transition:opacity .2s; }
+  .file-card:hover .file-card-actions { opacity:1; }
+  .action-link { font-size:12px; color:rgba(0,0,0,0.45); cursor:pointer; padding:4px 10px; border-radius:4px; transition:all .15s; text-decoration:none; line-height:20px; }
+  .action-link:hover { color:#1890ff; background:#e6f7ff; }
+  .action-link.danger:hover { color:#ff4d4f; background:#fff1f0; }
+
+  /* 分页 - Ant Design 风格 */
+  .pagination { display:flex; justify-content:center; align-items:center; gap:4px; margin-top:24px; }
+  .page-btn { min-width:32px; height:32px; border-radius:4px; border:1px solid #d9d9d9; background:#fff; font-size:12px; color:rgba(0,0,0,0.65); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; padding:0 6px; }
+  .page-btn:hover { border-color:#1890ff; color:#1890ff; }
+  .page-btn.active { background:#1890ff; color:#fff; border-color:#1890ff; }
+  .page-info { font-size:12px; color:rgba(0,0,0,0.45); margin:0 8px; }
+
+  /* 入场动画 */
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .file-card { animation: fadeIn 0.25s ease forwards; }
+  .file-card:nth-child(2) { animation-delay:0.04s; }
+  .file-card:nth-child(3) { animation-delay:0.08s; }
+</style>
+</head>
+<body>
+
+<!-- 操作栏 -->
+<div class="action-bar">
+  <div style="display:flex;align-items:center;gap:24px;">
+    <div class="breadcrumb">
+      <a href="#">文件管理</a>
+      <span style="color:#e8e8e8;">/</span>
+      <span class="current">航空发动机技术资料</span>
+    </div>
+    <div style="color:#e8e8e8;">|</div>
+    <div class="stats">
+      <span class="count">156</span>
+      <span class="unit">个文件</span>
+      <span style="margin:0 8px;color:#f0f0f0;">|</span>
+      <span>容量 <span style="color:rgba(0,0,0,0.65);font-weight:500;">1.2 GB</span></span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-primary">+ 上传文件</button>
+    <button class="btn">压缩包上传</button>
+  </div>
+</div>
+
+<!-- 主布局 -->
+<div class="main-layout">
+  <!-- 左侧标签筛选 -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span>标签筛选</span>
+      <span class="clear">清除全部</span>
+    </div>
+
+    <div class="tag-group">
+      <div class="tag-group-title" onclick="this.classList.toggle('collapsed');this.nextElementSibling.style.display=this.classList.contains('collapsed')?'none':'block'">
+        <span>科技报告</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div>
+        <div class="tag-field">任务来源/渠道</div>
+        <div class="tag-value active">国家任务 <span class="count">(42)</span></div>
+        <div class="tag-value">省市任务 <span class="count">(28)</span></div>
+        <div class="tag-value">自研项目 <span class="count">(15)</span></div>
+        <div class="tag-field" style="margin-top:3px;">型号</div>
+        <div class="tag-value">WS-15 <span class="count">(33)</span></div>
+        <div class="tag-value">WS-20 <span class="count">(21)</span></div>
+        <div class="tag-value">CJ-2000 <span class="count">(8)</span></div>
+        <div class="tag-field" style="margin-top:3px;">专业</div>
+        <div class="tag-value">材料工程 <span class="count">(18)</span></div>
+        <div class="tag-value">结构设计 <span class="count">(25)</span></div>
+        <div class="tag-value">控制系统 <span class="count">(12)</span></div>
+        <div class="tag-field" style="margin-top:3px;">类别</div>
+        <div class="tag-value">研究报告 <span class="count">(35)</span></div>
+        <div class="tag-value">试验报告 <span class="count">(22)</span></div>
+        <div class="tag-value">技术方案 <span class="count">(16)</span></div>
+      </div>
+    </div>
+
+    <div class="tag-group">
+      <div class="tag-group-title" onclick="this.classList.toggle('collapsed');this.nextElementSibling.style.display=this.classList.contains('collapsed')?'none':'block'">
+        <span>标准规范</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div>
+        <div class="tag-field">标准层次</div>
+        <div class="tag-value">国家标准 <span class="count">(12)</span></div>
+        <div class="tag-value">行业标准 <span class="count">(8)</span></div>
+        <div class="tag-field" style="margin-top:3px;">标准领域</div>
+        <div class="tag-value">设计规范 <span class="count">(6)</span></div>
+        <div class="tag-value">试验标准 <span class="count">(9)</span></div>
+        <div class="tag-field" style="margin-top:3px;">军民属性</div>
+        <div class="tag-value">军民通用 <span class="count">(14)</span></div>
+        <div class="tag-field" style="margin-top:3px;">适用航空器类型</div>
+        <div class="tag-value">涡扇发动机 <span class="count">(10)</span></div>
+        <div class="tag-value">涡桨发动机 <span class="count">(4)</span></div>
+        <div class="tag-field" style="margin-top:3px;">标准类型</div>
+        <div class="tag-value">强制性 <span class="count">(5)</span></div>
+        <div class="tag-value">推荐性 <span class="count">(9)</span></div>
+      </div>
+    </div>
+
+    <div class="tag-group">
+      <div class="tag-group-title" onclick="this.classList.toggle('collapsed');this.nextElementSibling.style.display=this.classList.contains('collapsed')?'none':'block'">
+        <span>新闻资讯</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div>
+        <div class="tag-field">新闻类型</div>
+        <div class="tag-value">行业动态 <span class="count">(5)</span></div>
+        <div class="tag-value">技术前沿 <span class="count">(3)</span></div>
+        <div class="tag-field" style="margin-top:3px;">新闻专业</div>
+        <div class="tag-value">动力系统 <span class="count">(4)</span></div>
+      </div>
+    </div>
+
+    <div class="tag-group">
+      <div class="tag-group-title" onclick="this.classList.toggle('collapsed');this.nextElementSibling.style.display=this.classList.contains('collapsed')?'none':'block'">
+        <span>规章制度</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div>
+        <div class="tag-field">业务域</div>
+        <div class="tag-value">质量管理 <span class="count">(6)</span></div>
+        <div class="tag-field" style="margin-top:3px;">制度等级</div>
+        <div class="tag-value">所级 <span class="count">(9)</span></div>
+        <div class="tag-field" style="margin-top:3px;">主责部门</div>
+        <div class="tag-value">技术部 <span class="count">(7)</span></div>
+      </div>
+    </div>
+
+    <div class="tag-group">
+      <div class="tag-group-title" onclick="this.classList.toggle('collapsed');this.nextElementSibling.style.display=this.classList.contains('collapsed')?'none':'block'">
+        <span>期刊文献</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div>
+        <div class="tag-field">来源数据库</div>
+        <div class="tag-value">CNKI <span class="count">(11)</span></div>
+        <div class="tag-value">万方 <span class="count">(6)</span></div>
+        <div class="tag-field" style="margin-top:3px;">学科</div>
+        <div class="tag-value">动力工程 <span class="count">(8)</span></div>
+        <div class="tag-field" style="margin-top:3px;">论文级别</div>
+        <div class="tag-value">核心期刊 <span class="count">(9)</span></div>
+        <div class="tag-value">SCI <span class="count">(4)</span></div>
+        <div class="tag-field" style="margin-top:3px;">行业分类</div>
+        <div class="tag-value">航空航天 <span class="count">(13)</span></div>
+      </div>
+    </div>
+
+    <div class="tag-group">
+      <div class="tag-group-title" onclick="this.classList.toggle('collapsed');this.nextElementSibling.style.display=this.classList.contains('collapsed')?'none':'block'">
+        <span>行政公文</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div>
+        <div class="tag-field">来文单位</div>
+        <div class="tag-value">集团公司 <span class="count">(7)</span></div>
+        <div class="tag-field" style="margin-top:3px;">主办单位</div>
+        <div class="tag-value">综合管理部 <span class="count">(5)</span></div>
+        <div class="tag-field" style="margin-top:3px;">拟稿人</div>
+        <div class="tag-value">张三 <span class="count">(3)</span></div>
+        <div class="tag-field" style="margin-top:3px;">拟稿部门</div>
+        <div class="tag-value">技术部 <span class="count">(4)</span></div>
+      </div>
+    </div>
+
+    <div class="tag-group">
+      <div class="tag-group-title" onclick="this.classList.toggle('collapsed');this.nextElementSibling.style.display=this.classList.contains('collapsed')?'none':'block'">
+        <span>知识产权</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div>
+        <div class="tag-field">专利发明人</div>
+        <div class="tag-value">张三 <span class="count">(3)</span></div>
+        <div class="tag-field" style="margin-top:3px;">专利申请人</div>
+        <div class="tag-value">本单位 <span class="count">(5)</span></div>
+        <div class="tag-field" style="margin-top:3px;">科技成果 - 申报人</div>
+        <div class="tag-value">李四 <span class="count">(2)</span></div>
+        <div class="tag-field" style="margin-top:3px;">科技成果 - 完成人</div>
+        <div class="tag-value">王五 <span class="count">(2)</span></div>
+        <div class="tag-field" style="margin-top:3px;">软著开发人</div>
+        <div class="tag-value">赵六 <span class="count">(1)</span></div>
+        <div class="tag-field" style="margin-top:3px;">著作权人代表</div>
+        <div class="tag-value">本单位 <span class="count">(1)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧内容区 -->
+  <div class="content">
+    <!-- 搜索和筛选栏 -->
+    <div class="search-bar">
+      <div class="search-input">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" placeholder="搜索文档名称、作者、摘要...">
+      </div>
+      <select class="filter-select">
+        <option>全部类型</option>
+        <option>科技报告</option>
+        <option>标准规范</option>
+        <option>新闻资讯</option>
+        <option>规章制度</option>
+        <option>期刊文献</option>
+        <option>行政公文</option>
+        <option>知识产权</option>
+      </select>
+      <select class="filter-select">
+        <option>最新上传</option>
+        <option>按名称</option>
+        <option>按作者</option>
+        <option>按年度</option>
+      </select>
+    </div>
+
+    <!-- 活跃筛选标签 -->
+    <div class="active-filters">
+      <div class="filter-tag">任务来源：国家任务 <span class="remove">x</span></div>
+      <div class="filter-tag">型号：WS-15 <span class="remove">x</span></div>
+    </div>
+
+    <!-- 文件卡片列表 -->
+    <div class="file-card">
+      <div class="file-card-inner">
+        <div class="file-card-body">
+          <div class="file-card-meta">
+            <span class="badge badge-type">科技报告</span>
+            <span class="badge badge-public">公开</span>
+            <span class="file-year">2024年度</span>
+          </div>
+          <div class="file-card-title">涡扇发动机高温合金叶片疲劳寿命评估方法研究</div>
+          <div class="file-card-info">
+            <span>作者：张三, 李四</span>
+            <span class="sep">|</span>
+            <span>技术体系：航空发动机</span>
+            <span class="sep">|</span>
+            <span>来源：中国航发研究院</span>
+            <span class="sep">|</span>
+            <span>2024-03-15</span>
+          </div>
+          <div class="file-card-abstract">本报告针对涡扇发动机高压涡轮叶片在复杂热力载荷下的疲劳寿命问题，提出了一种基于损伤力学和有限元仿真相结合的评估方法。通过建立叶片三维有限元模型，考虑温度梯度、离心力和气动载荷的耦合作用，对叶片的蠕变-疲劳交互作用进行了系统的参数化研究。</div>
+          <div class="file-card-tags">
+            <span class="pill">国家任务</span>
+            <span class="pill">WS-15</span>
+            <span class="pill">材料工程</span>
+            <span class="pill">研究报告</span>
+          </div>
+        </div>
+        <div class="file-card-side">
+          <div class="file-icon">&#128196;</div>
+          <div class="file-size">2.3 MB</div>
+        </div>
+      </div>
+      <div class="file-card-actions">
+        <a class="action-link">下载</a>
+        <a class="action-link">编辑</a>
+        <a class="action-link danger">删除</a>
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-inner">
+        <div class="file-card-body">
+          <div class="file-card-meta">
+            <span class="badge badge-type">标准规范</span>
+            <span class="badge badge-public">公开</span>
+            <span class="file-year">2023年度</span>
+          </div>
+          <div class="file-card-title">GJB 1234-2023 航空涡轮发动机通用技术要求</div>
+          <div class="file-card-info">
+            <span>作者：王五</span>
+            <span class="sep">|</span>
+            <span>技术体系：航空发动机</span>
+            <span class="sep">|</span>
+            <span>来源：国防科工局</span>
+            <span class="sep">|</span>
+            <span>2023-08-20</span>
+          </div>
+          <div class="file-card-abstract">本标准规定了航空涡轮发动机在设计、制造、试验和验收过程中的通用技术要求，适用于军用航空涡扇、涡桨发动机的研制和生产。涵盖性能指标、结构强度、环境适应性、可靠性等方面的技术要求。</div>
+          <div class="file-card-tags">
+            <span class="pill">国家标准</span>
+            <span class="pill">军民通用</span>
+            <span class="pill">涡扇发动机</span>
+            <span class="pill">设计规范</span>
+          </div>
+        </div>
+        <div class="file-card-side">
+          <div class="file-icon">&#128209;</div>
+          <div class="file-size">5.1 MB</div>
+        </div>
+      </div>
+      <div class="file-card-actions">
+        <a class="action-link">下载</a>
+        <a class="action-link">编辑</a>
+        <a class="action-link danger">删除</a>
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-inner">
+        <div class="file-card-body">
+          <div class="file-card-meta">
+            <span class="badge badge-type">知识产权</span>
+            <span class="badge badge-public">公开</span>
+            <span class="file-year">2024年度</span>
+          </div>
+          <div class="file-card-title">一种航空发动机叶片冷却结构及冷却方法</div>
+          <div class="file-card-info">
+            <span>作者：赵六, 钱七</span>
+            <span class="sep">|</span>
+            <span>技术体系：航空发动机</span>
+            <span class="sep">|</span>
+            <span>来源：本单位</span>
+            <span class="sep">|</span>
+            <span>2024-01-10</span>
+          </div>
+          <div class="file-card-abstract">本发明涉及航空发动机技术领域，公开了一种涡轮叶片复合冷却结构，包括气膜冷却孔、冲击冷却通道和尾缘劈缝。通过优化冷却通道的布置方式和冷却气流的分配比例，显著提高了叶片的冷却效率和服役寿命。</div>
+          <div class="file-card-tags">
+            <span class="pill">发明专利</span>
+            <span class="pill">张三</span>
+            <span class="pill">结构设计</span>
+          </div>
+        </div>
+        <div class="file-card-side">
+          <div class="file-icon">&#128203;</div>
+          <div class="file-size">1.8 MB</div>
+        </div>
+      </div>
+      <div class="file-card-actions">
+        <a class="action-link">下载</a>
+        <a class="action-link">编辑</a>
+        <a class="action-link danger">删除</a>
+      </div>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination">
+      <button class="page-btn">&laquo;</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <span class="page-info">...</span>
+      <button class="page-btn">10</button>
+      <button class="page-btn">&raquo;</button>
+      <span class="page-info">共 156 条</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

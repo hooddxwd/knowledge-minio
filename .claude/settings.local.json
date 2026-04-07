@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(export NODE_OPTIONS=--openssl-legacy-provider)",
+      "Bash(nvm list:*)",
+      "Bash(fnm list:*)",
+      "Bash(where node:*)",
+      "Bash(export PATH=\"/e/nvm/v12.22.7:$PATH\")"
+    ]
+  }
+}

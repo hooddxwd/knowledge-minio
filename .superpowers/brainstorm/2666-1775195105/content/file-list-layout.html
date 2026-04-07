@@ -1,0 +1,181 @@
+<h2>文件列表页 — 布局方案</h2>
+<p class="subtitle">参照知网/文库风格，左侧标签筛选 + 右侧卡片式文件列表</p>
+
+<div class="mockup">
+  <div class="mockup-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#1890ff;color:#fff;font-size:14px;">
+      <span>&larr; 返回文件夹列表 &nbsp; / &nbsp; 航空发动机技术资料</span>
+      <div>
+        <button class="mock-button" style="background:#fff;color:#1890ff;border:1px solid #1890ff;font-size:12px;padding:4px 12px;margin-right:8px;">上传文件</button>
+        <button class="mock-button" style="background:#fff;color:#1890ff;border:1px solid #1890ff;font-size:12px;padding:4px 12px;">压缩包上传</button>
+      </div>
+    </div>
+  </div>
+  <div class="mockup-body" style="display:flex;min-height:420px;">
+    <!-- 左侧标签筛选 -->
+    <div style="width:220px;background:#fafafa;border-right:1px solid #e8e8e8;padding:12px;font-size:12px;">
+      <div style="font-weight:bold;margin-bottom:12px;color:#333;">标签筛选</div>
+
+      <div style="margin-bottom:16px;">
+        <div style="color:#1890ff;font-weight:500;margin-bottom:6px;">科技报告</div>
+        <div style="padding:2px 0 2px 12px;color:#666;">○ 任务来源/渠道</div>
+        <div style="padding:2px 0 2px 24px;color:#999;">├ 国家任务</div>
+        <div style="padding:2px 0 2px 24px;color:#999;">├ 省市任务</div>
+        <div style="padding:2px 0 2px 24px;color:#999;">└ 自研项目</div>
+        <div style="padding:2px 0 2px 12px;color:#666;">○ 型号</div>
+        <div style="padding:2px 0 2px 24px;color:#999;">├ WS-15</div>
+        <div style="padding:2px 0 2px 24px;color:#999;">└ WS-20</div>
+        <div style="padding:2px 0 2px 12px;color:#666;">○ 专业</div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="color:#1890ff;font-weight:500;margin-bottom:6px;">标准规范</div>
+        <div style="padding:2px 0 2px 12px;color:#666;">○ 标准层次</div>
+        <div style="padding:2px 0 2px 12px;color:#666;">○ 标准领域</div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="color:#1890ff;font-weight:500;margin-bottom:6px;">知识产权</div>
+        <div style="padding:2px 0 2px 12px;color:#666;">○ 专利发明人</div>
+        <div style="padding:2px 0 2px 12px;color:#666;">○ 科技成果</div>
+      </div>
+    </div>
+
+    <!-- 右侧文件列表 - 卡片式 -->
+    <div style="flex:1;padding:16px;overflow-y:auto;">
+      <!-- 搜索栏 -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <input class="mock-input" placeholder="搜索文档名称、作者、摘要..." style="flex:1;">
+        <select class="mock-input" style="width:120px;">
+          <option>文档类型</option>
+          <option>科技报告</option>
+          <option>标准规范</option>
+          <option>新闻资讯</option>
+        </select>
+      </div>
+
+      <!-- 文件卡片1 -->
+      <div style="border:1px solid #e8e8e8;border-radius:6px;padding:16px;margin-bottom:12px;cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <span style="background:#f0f5ff;color:#1890ff;padding:2px 8px;border-radius:3px;font-size:11px;">科技报告</span>
+              <span style="background:#fff7e6;color:#fa8c16;padding:2px 8px;border-radius:3px;font-size:11px;">内部</span>
+              <span style="font-size:11px;color:#999;">2024年度</span>
+            </div>
+            <div style="font-size:15px;font-weight:500;color:#333;margin-bottom:4px;">
+              涡扇发动机高温合金叶片疲劳寿命评估方法研究
+            </div>
+            <div style="font-size:12px;color:#999;margin-bottom:6px;">
+              作者：张三, 李四 &nbsp;|&nbsp; 技术体系：航空发动机 &nbsp;|&nbsp; 2024-03-15
+            </div>
+            <div style="font-size:12px;color:#666;line-height:1.6;">
+              本报告针对涡扇发动机高压涡轮叶片在复杂热力载荷下的疲劳寿命问题，提出了一种基于损伤力学和有限元仿真相结合的评估方法...
+            </div>
+            <div style="margin-top:8px;">
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;margin-right:6px;">国家任务</span>
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;margin-right:6px;">WS-15</span>
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;">材料工程</span>
+            </div>
+          </div>
+          <div style="text-align:center;margin-left:16px;min-width:60px;">
+            <div style="font-size:28px;color:#bbb;">📄</div>
+            <div style="font-size:11px;color:#999;margin-top:4px;">2.3 MB</div>
+          </div>
+        </div>
+        <div style="text-align:right;margin-top:8px;border-top:1px solid #f0f0f0;padding-top:8px;">
+          <a style="color:#1890ff;font-size:12px;margin-left:12px;">下载</a>
+          <a style="color:#1890ff;font-size:12px;margin-left:12px;">编辑</a>
+          <a style="color:#ff4d4f;font-size:12px;margin-left:12px;">删除</a>
+        </div>
+      </div>
+
+      <!-- 文件卡片2 -->
+      <div style="border:1px solid #e8e8e8;border-radius:6px;padding:16px;margin-bottom:12px;cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <span style="background:#f6ffed;color:#52c41a;padding:2px 8px;border-radius:3px;font-size:11px;">标准规范</span>
+              <span style="background:#fff1f0;color:#f5222d;padding:2px 8px;border-radius:3px;font-size:11px;">机密</span>
+              <span style="font-size:11px;color:#999;">2023年度</span>
+            </div>
+            <div style="font-size:15px;font-weight:500;color:#333;margin-bottom:4px;">
+              GJB 1234-2023 航空涡轮发动机通用技术要求
+            </div>
+            <div style="font-size:12px;color:#999;margin-bottom:6px;">
+              作者：王五 &nbsp;|&nbsp; 技术体系：航空发动机 &nbsp;|&nbsp; 2023-08-20
+            </div>
+            <div style="font-size:12px;color:#666;line-height:1.6;">
+              本标准规定了航空涡轮发动机在设计、制造、试验和验收过程中的通用技术要求，适用于军用航空涡扇、涡桨发动机...
+            </div>
+            <div style="margin-top:8px;">
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;margin-right:6px;">国家标准</span>
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;margin-right:6px;">军民通用</span>
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;">涡扇发动机</span>
+            </div>
+          </div>
+          <div style="text-align:center;margin-left:16px;min-width:60px;">
+            <div style="font-size:28px;color:#bbb;">📑</div>
+            <div style="font-size:11px;color:#999;margin-top:4px;">5.1 MB</div>
+          </div>
+        </div>
+        <div style="text-align:right;margin-top:8px;border-top:1px solid #f0f0f0;padding-top:8px;">
+          <a style="color:#1890ff;font-size:12px;margin-left:12px;">下载</a>
+          <a style="color:#1890ff;font-size:12px;margin-left:12px;">编辑</a>
+          <a style="color:#ff4d4f;font-size:12px;margin-left:12px;">删除</a>
+        </div>
+      </div>
+
+      <!-- 文件卡片3 -->
+      <div style="border:1px solid #e8e8e8;border-radius:6px;padding:16px;margin-bottom:12px;cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <span style="background:#fff0f6;color:#eb2f96;padding:2px 8px;border-radius:3px;font-size:11px;">知识产权</span>
+              <span style="background:#fff7e6;color:#fa8c16;padding:2px 8px;border-radius:3px;font-size:11px;">秘密</span>
+              <span style="font-size:11px;color:#999;">2024年度</span>
+            </div>
+            <div style="font-size:15px;font-weight:500;color:#333;margin-bottom:4px;">
+              一种航空发动机叶片冷却结构及冷却方法
+            </div>
+            <div style="font-size:12px;color:#999;margin-bottom:6px;">
+              作者：赵六, 钱七 &nbsp;|&nbsp; 技术体系：航空发动机 &nbsp;|&nbsp; 2024-01-10
+            </div>
+            <div style="font-size:12px;color:#666;line-height:1.6;">
+              本发明涉及航空发动机技术领域，公开了一种涡轮叶片复合冷却结构，包括气膜冷却孔、冲击冷却通道和尾缘劈缝...
+            </div>
+            <div style="margin-top:8px;">
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;margin-right:6px;">发明专利</span>
+              <span style="display:inline-block;background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:12px;font-size:11px;">张三</span>
+            </div>
+          </div>
+          <div style="text-align:center;margin-left:16px;min-width:60px;">
+            <div style="font-size:28px;color:#bbb;">📋</div>
+            <div style="font-size:11px;color:#999;margin-top:4px;">1.8 MB</div>
+          </div>
+        </div>
+        <div style="text-align:right;margin-top:8px;border-top:1px solid #f0f0f0;padding-top:8px;">
+          <a style="color:#1890ff;font-size:12px;margin-left:12px;">下载</a>
+          <a style="color:#1890ff;font-size:12px;margin-left:12px;">编辑</a>
+          <a style="color:#ff4d4f;font-size:12px;margin-left:12px;">删除</a>
+        </div>
+      </div>
+
+      <!-- 分页 -->
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:#999;">
+        &laquo; 上一页 &nbsp; 1 2 3 ... 10 &nbsp; 下一页 &raquo; &nbsp; 共 156 条
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:20px;">
+  <h3>设计要点</h3>
+  <ul style="font-size:13px;color:#555;line-height:2;">
+    <li><strong>左侧标签树：</strong>按文档类型大类分组，每类下展开对应的标签字段及可选值，点击筛选右侧文件</li>
+    <li><strong>右侧卡片列表：</strong>每个文件一张卡片，显示文档类型标签、密级、标题、作者、摘要、标签值、文件大小</li>
+    <li><strong>标签药丸样式：</strong>用圆角小标签显示文件关联的标签值，不同文档类型用不同颜色</li>
+    <li><strong>顶部搜索栏：</strong>支持按名称/作者/摘要搜索，按文档类型筛选</li>
+    <li><strong>操作按钮：</strong>每张卡片右下角有下载、编辑、删除操作</li>
+  </ul>
+</div>
