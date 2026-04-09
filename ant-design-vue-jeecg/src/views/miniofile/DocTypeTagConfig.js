@@ -5,56 +5,56 @@
 /**
  * 密级等级配置
  * 等级顺序：公开(1) → 内部(2) → 秘密(3) → 机密(4) → 绝密(5)
- * 默认只开放 公开、内部 两级，如需开放更多在此处修改
+ * 默认只开放 公开、内部 两级，如需开放更多在数据字典 classification_level 中修改
  */
-export const CLASSIFICATION_LEVELS = ['公开', '内部']
+export const CLASSIFICATION_LEVEL_DICT_CODE = 'classification_level'
 export const DOC_TYPES = [
   {
     docTypeKey: '科技报告',
     label: '科技报告',
     tagFields: [
-      { field: 'reportTaskSource', label: '任务来源/渠道', type: 'select', options: ['国家任务', '省市任务', '自研项目', '国际合作', '其他'] },
-      { field: 'reportModel', label: '型号', type: 'select', options: ['WS-15', 'WS-20', 'CJ-1000', '其他'] },
-      { field: 'reportMajor', label: '专业', type: 'select', options: ['材料工程', '结构设计', '气动设计', '控制系统', '推进系统', '其他'] },
-      { field: 'reportCategory', label: '类别', type: 'select', options: ['研究报告', '试验报告', '设计报告', '技术报告', '其他'] },
+      { field: 'reportTaskSource', label: '任务来源/渠道', type: 'select', dictCode: 'doc_report_task_source' },
+      { field: 'reportModel', label: '型号', type: 'select', dictCode: 'doc_report_model' },
+      { field: 'reportMajor', label: '专业', type: 'select', dictCode: 'doc_report_major' },
+      { field: 'reportCategory', label: '类别', type: 'select', dictCode: 'doc_report_category' },
     ]
   },
   {
     docTypeKey: '标准规范',
     label: '标准规范',
     tagFields: [
-      { field: 'stdLevel', label: '标准层次', type: 'select', options: ['国家标准', '行业标准', '企业标准', '国际标准', '其他'] },
-      { field: 'stdField', label: '标准领域', type: 'select', options: ['航空', '航天', '电子', '机械', '材料', '其他'] },
-      { field: 'stdCivilMilitary', label: '军民属性', type: 'select', options: ['军用', '民用', '军民两用'] },
-      { field: 'stdAircraftType', label: '适用航空器类型', type: 'select', options: ['固定翼', '旋翼机', '无人机', '通用航空', '其他'] },
-      { field: 'stdType', label: '标准类型', type: 'select', options: ['基础标准', '产品标准', '方法标准', '管理标准', '其他'] },
+      { field: 'stdLevel', label: '标准层次', type: 'select', dictCode: 'standard_level' },
+      { field: 'stdField', label: '标准领域', type: 'select', dictCode: 'doc_std_field' },
+      { field: 'stdCivilMilitary', label: '军民属性', type: 'select', dictCode: 'doc_std_civil_military' },
+      { field: 'stdAircraftType', label: '适用航空器类型', type: 'select', dictCode: 'doc_std_aircraft_type' },
+      { field: 'stdType', label: '标准类型', type: 'select', dictCode: 'doc_std_type' },
     ]
   },
   {
     docTypeKey: '新闻资讯',
     label: '新闻资讯',
     tagFields: [
-      { field: 'newsType', label: '新闻类型', type: 'select', options: ['行业动态', '科研进展', '政策法规', '会议报道', '其他'] },
-      { field: 'newsMajor', label: '新闻专业', type: 'select', options: ['气动', '结构', '材料', '控制', '推进', '其他'] },
+      { field: 'newsType', label: '新闻类型', type: 'select', dictCode: 'doc_news_type' },
+      { field: 'newsMajor', label: '新闻专业', type: 'select', dictCode: 'doc_news_major' },
     ]
   },
   {
     docTypeKey: '规章制度',
     label: '规章制度',
     tagFields: [
-      { field: 'ruleDomain', label: '业务域', type: 'select', options: ['科研管理', '人力资源', '财务管理', '质量管理', '其他'] },
-      { field: 'ruleLevel', label: '制度等级', type: 'select', options: ['所级', '部门级', '国家级', '行业级', '其他'] },
-      { field: 'ruleDept', label: '主责部门', type: 'select', options: ['科研部', '技术部', '质量部', '综合管理部', '其他'] },
+      { field: 'ruleDomain', label: '业务域', type: 'select', dictCode: 'doc_rule_domain' },
+      { field: 'ruleLevel', label: '制度等级', type: 'select', dictCode: 'doc_rule_level' },
+      { field: 'ruleDept', label: '主责部门', type: 'select', dictCode: 'doc_rule_dept' },
     ]
   },
   {
     docTypeKey: '期刊文献',
     label: '期刊文献',
     tagFields: [
-      { field: 'journalDb', label: '来源数据库', type: 'select', options: ['CNKI', '万方', '维普', 'Web of Science', '其他'] },
-      { field: 'journalSubject', label: '学科', type: 'select', options: ['航空宇航科学与技术', '材料科学与工程', '机械工程', '动力工程', '其他'] },
-      { field: 'journalLevel', label: '论文级别', type: 'select', options: ['SCI', 'EI', '核心期刊', '会议论文', '其他'] },
-      { field: 'journalIndustry', label: '行业分类', type: 'select', options: ['航空运输', '航天器制造', '航空设备制造', '其他'] },
+      { field: 'journalDb', label: '来源数据库', type: 'select', dictCode: 'doc_journal_db' },
+      { field: 'journalSubject', label: '学科', type: 'select', dictCode: 'doc_journal_subject' },
+      { field: 'journalLevel', label: '论文级别', type: 'select', dictCode: 'doc_journal_level' },
+      { field: 'journalIndustry', label: '行业分类', type: 'select', dictCode: 'doc_journal_industry' },
     ]
   },
   {
