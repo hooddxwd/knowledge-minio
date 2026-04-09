@@ -12,9 +12,7 @@
         </a-select>
       </a-form-model-item>
       <a-form-model-item label="文档密级" required>
-        <a-select v-model="form.classificationLevel" placeholder="请选择密级">
-          <a-select-option v-for="level in CLASSIFICATION_LEVELS" :key="level" :value="level">{{ level }}</a-select-option>
-        </a-select>
+        <JDictSelectTag v-model="form.classificationLevel" dictCode="classification_level" placeholder="请选择" allowClear />
       </a-form-model-item>
       <a-form-model-item label="选择文件">
         <a-upload :fileList="fileList" :beforeUpload="beforeUpload" :remove="() => { fileList = [] }" :accept="isZipUpload ? '.zip' : ''">
@@ -27,9 +25,7 @@
       <a-form-model-item label="年度"><a-input v-model="form.year" placeholder="如 2024" /></a-form-model-item>
       <a-form-model-item label="摘要"><a-textarea v-model="form.summary" :rows="2" /></a-form-model-item>
       <a-form-model-item v-for="tf in localTagFields" :key="tf.field" :label="tf.label">
-        <a-select v-if="tf.type === 'select'" v-model="form[tf.field]" placeholder="请选择" allowClear>
-          <a-select-option v-for="opt in tf.options" :key="opt" :value="opt">{{ opt }}</a-select-option>
-        </a-select>
+        <JDictSelectTag v-if="tf.type === 'select'" v-model="form[tf.field]" :dictCode="tf.dictCode" placeholder="请选择" allowClear />
         <a-input v-else v-model="form[tf.field]" :placeholder="'请输入' + tf.label" />
       </a-form-model-item>
       <a-form-model-item :wrapper-col="{ offset: 5, span: 17 }">
@@ -42,10 +38,12 @@
 <script>
 import { ACCESS_TOKEN } from '@/store/mutation-types'
 import Vue from 'vue'
-import { DOC_TYPES, IP_SUB_TYPES, CLASSIFICATION_LEVELS } from './DocTypeTagConfig'
+import { DOC_TYPES, IP_SUB_TYPES } from './DocTypeTagConfig'
+import JDictSelectTag from '@/components/dict/JDictSelectTag'
 
 export default {
   name: 'FileUploadModal',
+  components: { JDictSelectTag },
   props: {
     folderId: { type: String, required: true },
     docType: { type: String, default: '' },
@@ -54,7 +52,6 @@ export default {
     return {
       DOC_TYPES,
       IP_SUB_TYPES,
-      CLASSIFICATION_LEVELS,
       visible: false,
       isZipUpload: false,
       fileList: [],
