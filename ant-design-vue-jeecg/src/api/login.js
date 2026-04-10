@@ -20,6 +20,13 @@ export function login(parameter) {
   })
 }
 
+export function keylogin() {
+  return axios({
+    url: '/sys/keyLogin',
+    method: 'post',
+  })
+}
+
 export function phoneLogin(parameter) {
   return axios({
     url: '/sys/phoneLogin',

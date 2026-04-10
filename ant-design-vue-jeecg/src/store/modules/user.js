@@ -1,6 +1,6 @@
 import Vue from 'vue'
-import { login, logout, phoneLogin, thirdLogin } from "@/api/login"
-import { ACCESS_TOKEN, USER_NAME,USER_INFO,USER_AUTH,SYS_BUTTON_AUTH,UI_CACHE_DB_DICT_DATA,TENANT_ID,CACHE_INCLUDED_ROUTES } from "@/store/mutation-types"
+import { login, logout, phoneLogin, thirdLogin, keylogin } from "@/api/login"
+import { ACCESS_TOKEN, USER_NAME,USER_INFO,USER_AUTH,SYS_BUTTON_AUTH,UI_CACHE_DB_DICT_DATA,TENANT_ID,CACHE_INCLUDED_ROUTES,USER_SECRETLEVEL,SYS_SECRETLEVEL,SANYUAN_OPEN } from "@/store/mutation-types"
 import { welcome } from "@/utils/util"
 import { queryPermissionsByUser } from '@/api/api'
 import { getAction } from '@/api/manage'
@@ -17,6 +17,9 @@ const user = {
     info: {},
     // 系统安全模式
     sysSafeMode: null,
+    // 密级
+    sysSecretLevel: null,
+    userSecretLevel: null,
   },
 
   mutations: {
@@ -47,6 +50,12 @@ const user = {
         state.sysSafeMode = false
       }
     },
+    SET_SYS_SECRETLEVEL: (state, sysSecretLevel) => {
+      state.sysSecretLevel = sysSecretLevel
+    },
+    SET_USER_SECRETLEVEL: (state, userSecretLevel) => {
+      state.userSecretLevel = userSecretLevel
+    },
   },
 
   actions: {
@@ -68,6 +77,42 @@ const user = {
             resolve(response)
           }else{
             resolve(response)
+          }
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // key登录
+    KeyLogin({ commit }) {
+      debugger
+      return new Promise((resolve, reject) => {
+        keylogin().then(response => {
+          if(!response.success){
+            reject(response);
+          }else if(response.code =='200'){
+            const result = response.result
+            const userInfo = result.userInfo
+            Vue.ls.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
+            Vue.ls.set(USER_NAME, userInfo.username, 7 * 24 * 60 * 60 * 1000)
+            Vue.ls.set(USER_INFO, userInfo, 7 * 24 * 60 * 60 * 1000)
+            Vue.ls.set(UI_CACHE_DB_DICT_DATA, result.sysAllDictItems, 7 * 24 * 60 * 60 * 1000)
+            //用户密级和系统密级
+            Vue.ls.set(USER_SECRETLEVEL, userInfo.secretLevel, 7 * 24 * 60 * 60 * 1000)
+            Vue.ls.set(SYS_SECRETLEVEL, result.sysSecretLevel, 7 * 24 * 60 * 60 * 1000)
+            //三员策略是否启用
+            Vue.ls.set(SANYUAN_OPEN, result.sanyuanOpen, 7 * 24 * 60 * 60 * 1000)
+
+
+            commit('SET_TOKEN', result.token)
+            commit('SET_INFO', userInfo)
+            commit('SET_NAME', { username: userInfo.username,realname: userInfo.realname, welcome: welcome() })
+            commit('SET_AVATAR', userInfo.avatar)
+            commit('SET_SYS_SECRETLEVEL', result.sysSecretLevel)
+            commit('SET_USER_SECRETLEVEL', userInfo.secretLevel)
+            resolve(response)
+          }else{
+            reject(response)
           }
         }).catch(error => {
           reject(error)

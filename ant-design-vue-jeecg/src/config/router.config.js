@@ -298,8 +298,14 @@ export const constantRouterMap = [
     path: '/user',
     component: UserLayout,
     redirect: '/user/login',
+    // redirect: '/user/keyLogin',
     hidden: true,
     children: [
+      {
+        path: 'keyLogin',
+        name: 'keyLogin',
+        component: () => import(/* webpackChunkName: "user" */ '@/views/user/keyLogin')
+      },
       {
         path: 'login',
         name: 'login',

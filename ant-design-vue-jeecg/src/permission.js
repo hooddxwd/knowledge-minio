@@ -9,7 +9,7 @@ import { generateIndexRouter, isOAuth2AppEnv } from '@/utils/util'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
-const whiteList = ['/user/login', '/user/register', '/user/register-result','/user/alteration'] // no redirect whitelist
+const whiteList = ['/user/login', '/user/keyLogin', '/user/register', '/user/register-result','/user/alteration'] // no redirect whitelist
 whiteList.push(OAUTH2_LOGIN_PAGE_PATH)
 
 router.beforeEach((to, from, next) => {
@@ -80,7 +80,7 @@ router.beforeEach((to, from, next) => {
       NProgress.done()
     } else {
       // 如果当前是在OAuth2APP环境，就跳转到OAuth2登录页面
-      let path = isOAuth2AppEnv() ? OAUTH2_LOGIN_PAGE_PATH : '/user/login'
+      let path = isOAuth2AppEnv() ? OAUTH2_LOGIN_PAGE_PATH : '/user'
       next({ path: path, query: { redirect: to.fullPath } })
       NProgress.done() // if current page is login will not trigger afterEach hook, so manually handle it
     }

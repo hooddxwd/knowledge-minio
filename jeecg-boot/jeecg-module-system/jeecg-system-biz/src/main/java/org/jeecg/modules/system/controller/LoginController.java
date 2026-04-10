@@ -33,8 +33,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -132,6 +135,80 @@ public class LoginController {
 		BeanUtils.copyProperties(sysUser, loginUser);
 		baseCommonService.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null,loginUser);
         //update-end--Author:wangshuai  Date:20200714  for：登录日志没有记录人员
+		return result;
+	}
+
+	/**
+	 * 校验Key登陆信息
+	 * @return
+	 */
+	//@AutoLog(value = "校验Key登陆信息")
+	@PostMapping("/keyLogin")
+//	@RequestMapping(value = "/keyLogin", method = RequestMethod.POST)
+	public Result<JSONObject> CheckUserKey(HttpServletRequest request) throws UnsupportedEncodingException {
+//		logger.info("keylogin=======================");
+		Result<JSONObject> result = new Result<JSONObject>();
+		//获取request
+		String username = "";//用户名
+		SysUser sysUser = null;
+		//ttpServletRequest request = SpringContextUtils.getHttpServletRequest();
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
+//			logger.info("cookies==null" );
+			cookies = new Cookie[0];
+		}
+		//username="wangdong2022";
+//		logger.info("cookies=======================" + cookies);
+		for (int i = 0; i < cookies.length; i++) {
+			Cookie cookie = cookies[i];
+			if ("KOAL_CERT_E".equals(cookie.getName())) {
+//	        	 userName = ComUtil.replaceNull2Space(new String(URLDecoder.decode(cookie.getValue()).getBytes("ISO-8859-1"), "UTF-8")) ;
+				username = new String(URLDecoder.decode(cookie.getValue()).getBytes("ISO-8859-1"), "UTF-8");
+//				logger.info("获取登陆的userCode=" + username);
+				username = username.substring(0, username.indexOf("@"));
+			}
+		}
+
+
+//		logger.info("当前登录用户："+System.getProperty("user.name"));
+
+
+		if (oConvertUtils.isNotEmpty(username)) {
+			LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.eq(SysUser::getUsername, username);
+			sysUser = sysUserService.getOne(queryWrapper);
+
+
+//			queryWrapper.eq(SysUser::getUsername, "yzl");
+//			sysUser = sysUserService.getOne(queryWrapper);
+		}else {
+//			result.setSuccess(false);
+//			result.setCode(500);
+			result.error500("单点登录获取用户标识失败！");
+			return result;
+		}
+		if(sysUser==null){
+//			result.setSuccess(false);
+//			result.setCode(500);
+			result.error500("非本系统用户，无法登录，请联系运维人员！");
+			return result;
+		}
+
+
+//		result = sysUserService.checkUserIsEffective(sysUser);
+//		if(!result.isSuccess()) {
+//			return result;
+//		}
+		//用户登录信息
+		userInfo(sysUser, result);
+		//update-begin--Author:liusq  Date:20210126  for：登录成功，删除redis中的验证码
+		/*redisUtil.del(realKey);*/
+		//update-begin--Author:liusq  Date:20210126  for：登录成功，删除redis中的验证码
+		LoginUser loginUser = new LoginUser();
+		BeanUtils.copyProperties(sysUser, loginUser);
+//		baseCommonService.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null, null, loginUser);
+
+
 		return result;
 	}
 
