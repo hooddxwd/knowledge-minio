@@ -28,6 +28,7 @@ export const DOC_TYPES = [
       { field: 'stdCivilMilitary', label: '军民属性', type: 'select', dictCode: 'doc_std_civil_military' },
       { field: 'stdAircraftType', label: '适用航空器类型', type: 'select', dictCode: 'doc_std_aircraft_type' },
       { field: 'stdType', label: '标准类型', type: 'select', dictCode: 'doc_std_type' },
+      { field: 'stdValidity', label: '有效性', type: 'select', dictCode: 'doc_std_validity' },
     ]
   },
   {

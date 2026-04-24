@@ -56,8 +56,38 @@
     <!-- 主体：左侧标签筛选 + 右侧列表 -->
     <div class="cnki-body">
       <!-- 左侧筛选 -->
-      <div class="cnki-sidebar" v-if="currentTagFields.length > 0">
-        <div class="sidebar-section">
+      <div class="cnki-sidebar">
+        <!-- 技术体系树形筛选 -->
+        <div class="sidebar-section" style="margin-bottom:12px" v-if="techSystemTree.length > 0">
+          <div class="sidebar-title">技术体系</div>
+          <div class="tech-tree-wrap">
+            <div
+              v-for="node in techSystemTree" :key="node.id"
+              class="tech-tree-node"
+            >
+              <div class="tech-tree-parent" @click="toggleTechExpand(node.id)">
+                <a-icon :type="expandedTechNodes[node.id] ? 'caret-down' : 'caret-right'" class="tech-expand-icon" v-if="node.children && node.children.length > 0" />
+                <span class="tech-expand-placeholder" v-else></span>
+                <span style="font-weight:500">{{ node.name }}</span>
+              </div>
+              <div v-if="expandedTechNodes[node.id] && node.children" class="tech-tree-children">
+                <div
+                  v-for="child in node.children" :key="child.id"
+                  class="tech-tree-child"
+                  :class="{ active: activeTechSystem.includes(child.id) }"
+                  @click="toggleTechFilter(child.id)"
+                >
+                  <a-icon :type="activeTechSystem.includes(child.id) ? 'check-square' : 'border'" class="tech-check-icon" :style="{ color: activeTechSystem.includes(child.id) ? '#1890ff' : '#bbb' }" />
+                  {{ child.name }}
+                  <span class="tech-count">{{ getTechSystemCount(child.id) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 原有标签筛选 -->
+        <div class="sidebar-section" v-if="currentTagFields.length > 0">
           <div class="sidebar-title">分类筛选</div>
           <div v-for="tf in currentTagFields" :key="tf.field" class="filter-group">
             <div class="filter-group-label">{{ tf.label }}</div>
@@ -79,8 +109,11 @@
       <!-- 右侧文献列表 -->
       <div class="cnki-main">
         <!-- 活跃筛选条件 -->
-        <div class="active-filters" v-if="Object.keys(activeFilters).length > 0">
+        <div class="active-filters" v-if="Object.keys(activeFilters).length > 0 || activeTechSystem.length > 0">
           <span class="filters-label">当前筛选：</span>
+          <a-tag v-for="tsId in activeTechSystem" :key="'ts_'+tsId" color="blue" closable @close="removeTechFilter(tsId)">
+            技术体系：{{ techSystemNameMap[tsId] || tsId }}
+          </a-tag>
           <a-tag v-for="(val, key) in activeFilters" :key="key" color="blue" closable @close="clearFilter(key)">
             {{ getFilterLabel(key) }}：{{ val }}
           </a-tag>
@@ -122,7 +155,7 @@
                   </template>
                   <template v-if="file.techSystem">
                     <span class="source-sep">|</span>
-                    <span class="source-tech">{{ file.techSystem }}</span>
+                    <span class="source-tech">{{ techSystemNameMap[file.techSystem] || file.techSystem }}</span>
                   </template>
                   <template v-if="file.year">
                     <span class="source-sep">|</span>
@@ -238,6 +271,11 @@ export default {
       ipTotal: 0,
       activeFilters: {},
       tagStatsMap: {},
+      techSystemTree: [],
+      expandedTechNodes: {},
+      activeTechSystem: [],
+      techSystemStatsMap: {},
+      techSystemNameMap: {},
       fileList: [],
       loadingFiles: false,
       searchText: '',
@@ -264,6 +302,8 @@ export default {
     this.loadFolderName()
     this.loadTypeCounts()
     this.loadTagStats()
+    this.loadTechSystemTree()
+    this.loadTechSystemStats()
     this.loadFiles()
   },
   methods: {
@@ -319,6 +359,7 @@ export default {
       }
       let keys = Object.keys(this.activeFilters)
       if (keys.length > 0) { params.tagField = keys[0]; params.tagValue = this.activeFilters[keys[0]] }
+      if (this.activeTechSystem.length > 0) { params.techSystem = this.activeTechSystem.join(',') }
       getAction('/minio/file/list', params).then(res => {
         if (res.success && res.result) {
           this.fileList = (res.result.records || []).map(f => ({ ...f, _expanded: false }))
@@ -329,16 +370,20 @@ export default {
     onTabChange(key) {
       this.activeDocType = key
       this.activeFilters = {}
+      this.activeTechSystem = []
       this.current = 1
       if (key === '知识产权') this.activeIpSubType = IP_SUB_TYPES[0].docTypeKey
       this.loadTagStats()
+      this.loadTechSystemStats()
       this.loadFiles()
     },
     onIpSubTypeChange(key) {
       this.activeIpSubType = key
       this.activeFilters = {}
+      this.activeTechSystem = []
       this.current = 1
       this.loadTagStats()
+      this.loadTechSystemStats()
       this.loadFiles()
     },
     toggleFilter(field, value) {
@@ -348,7 +393,6 @@ export default {
       this.loadFiles()
     },
     clearFilter(key) { this.$delete(this.activeFilters, key); this.current = 1; this.loadFiles() },
-    clearAllFilters() { this.activeFilters = {}; this.current = 1; this.loadFiles() },
     getFilterLabel(field) {
       let all = [...DOC_TYPES, ...IP_SUB_TYPES]
       for (let dt of all) { let f = dt.tagFields.find(tf => tf.field === field); if (f) return f.label }
@@ -377,7 +421,7 @@ export default {
     },
     deleteFile(id) {
       deleteAction('/minio/file/delete', { id }).then(res => {
-        if (res.success) { this.$message.success('删除成功'); this.loadFiles(); this.loadTypeCounts(); this.loadTagStats() }
+        if (res.success) { this.$message.success('删除成功'); this.loadFiles(); this.loadTypeCounts(); this.loadTagStats(); this.loadTechSystemStats() }
         else this.$message.error(res.message)
       })
     },
@@ -385,13 +429,80 @@ export default {
       this.$refs.uploadModal.show(isZip)
     },
     onUploadSuccess() {
-      this.loadFiles(); this.loadTypeCounts(); this.loadTagStats()
+      this.loadFiles(); this.loadTypeCounts(); this.loadTagStats(); this.loadTechSystemStats()
     },
     openEditModal(file) {
       this.$refs.editModal.show(file)
     },
     onEditSuccess() {
-      this.loadFiles(); this.loadTagStats()
+      this.loadFiles(); this.loadTagStats(); this.loadTechSystemStats()
+    },
+    loadTechSystemTree() {
+      getAction('/sys/category/loadTreeRoot', { pcode: 'C01', async: false }).then(res => {
+        if (res.success && res.result) {
+          this.techSystemTree = this.buildTechTree(res.result)
+        }
+      })
+    },
+    buildTechTree(nodes) {
+      if (!nodes) return []
+      return nodes.map(n => {
+        let id = n.key || n.id
+        let name = n.title || n.name
+        this.techSystemNameMap[id] = name
+        return {
+          id,
+          name,
+          children: n.children ? this.buildTechTree(n.children) : [],
+        }
+      })
+    },
+    removeTechFilter(id) {
+      let idx = this.activeTechSystem.indexOf(id)
+      if (idx >= 0) this.activeTechSystem.splice(idx, 1)
+      this.current = 1
+      this.loadFiles()
+    },
+    toggleTechExpand(id) {
+      this.$set(this.expandedTechNodes, id, !this.expandedTechNodes[id])
+    },
+    toggleTechFilter(id) {
+      let idx = this.activeTechSystem.indexOf(id)
+      if (idx >= 0) this.activeTechSystem.splice(idx, 1)
+      else this.activeTechSystem.push(id)
+      this.current = 1
+      this.loadFiles()
+    },
+    getTechSystemCount(id) {
+      let stat = this.techSystemStatsMap[id]
+      return stat ? stat : ''
+    },
+    loadTechSystemStats() {
+      this.techSystemStatsMap = {}
+      getAction('/minio/file/list', {
+        folderId: this.folderId,
+        docType: this.currentDocTypeForQuery,
+        pageNo: 1,
+        pageSize: 10000,
+      }).then(res => {
+        if (res.success && res.result && res.result.records) {
+          let map = {}
+          res.result.records.forEach(f => {
+            if (f.techSystem) {
+              f.techSystem.split(',').filter(s => s).forEach(id => {
+                map[id] = (map[id] || 0) + 1
+              })
+            }
+          })
+          this.techSystemStatsMap = map
+        }
+      })
+    },
+    clearAllFilters() {
+      this.activeFilters = {}
+      this.activeTechSystem = []
+      this.current = 1
+      this.loadFiles()
     },
   },
 }
@@ -522,6 +633,67 @@ export default {
   font-size: 10px;
   color: #999;
   margin-left: 2px;
+}
+
+/* ========== 技术体系树 ========== */
+.tech-tree-wrap {
+  padding: 6px 0;
+}
+.tech-tree-node {
+}
+.tech-tree-parent {
+  display: flex;
+  align-items: center;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.15s;
+}
+.tech-tree-parent:hover {
+  background: #e6f7ff;
+}
+.tech-tree-parent.active {
+  background: #e6f7ff;
+  color: #1890ff;
+  font-weight: 500;
+}
+.tech-expand-icon {
+  font-size: 10px;
+  color: #999;
+  margin-right: 4px;
+  width: 14px;
+}
+.tech-expand-placeholder {
+  display: inline-block;
+  width: 14px;
+}
+.tech-check-icon {
+  font-size: 13px;
+  margin-right: 4px;
+}
+.tech-tree-children {
+  padding-left: 28px;
+}
+.tech-tree-child {
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.15s;
+}
+.tech-tree-child:hover {
+  background: #e6f7ff;
+}
+.tech-tree-child.active {
+  background: #e6f7ff;
+  color: #1890ff;
+  font-weight: 500;
+}
+.tech-count {
+  font-size: 10px;
+  color: #999;
+  margin-left: 4px;
 }
 
 /* ========== 右侧主内容 ========== */

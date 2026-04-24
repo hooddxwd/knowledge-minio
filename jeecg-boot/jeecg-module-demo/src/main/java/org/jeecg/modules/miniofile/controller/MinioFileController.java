@@ -80,6 +80,15 @@ public class MinioFileController extends JeecgController<MinioFile, IMinioFileSe
         if (minioFile.getFileName() != null && !minioFile.getFileName().isEmpty()) {
             queryWrapper.like("file_name", minioFile.getFileName());
         }
+        if (minioFile.getTechSystem() != null && !minioFile.getTechSystem().isEmpty()) {
+            String[] techIds = minioFile.getTechSystem().split(",");
+            queryWrapper.and(w -> {
+                for (int i = 0; i < techIds.length; i++) {
+                    if (i == 0) w.apply("FIND_IN_SET({0}, tech_system) > 0", techIds[i]);
+                    else w.or().apply("FIND_IN_SET({0}, tech_system) > 0", techIds[i]);
+                }
+            });
+        }
         // 排序
         switch (sortBy) {
             case "time_asc": queryWrapper.orderByAsc("create_time"); break;

@@ -20,7 +20,18 @@
         </a-upload>
       </a-form-model-item>
       <a-form-model-item label="作者"><a-input v-model="form.author" /></a-form-model-item>
-      <a-form-model-item label="技术体系"><a-input v-model="form.techSystem" /></a-form-model-item>
+      <a-form-model-item label="技术体系">
+        <a-tree-select
+          v-model="techSystemValues"
+          treeCheckable
+          :showCheckedStrategy="SHOW_PARENT"
+          :treeData="techSystemTreeData"
+          :dropdownStyle="{ maxHeight: '400px', overflow: 'auto' }"
+          placeholder="请选择技术体系"
+          allowClear
+          style="width: 100%"
+        />
+      </a-form-model-item>
       <a-form-model-item label="文档来源"><a-input v-model="form.docSource" /></a-form-model-item>
       <a-form-model-item label="年度"><a-input v-model="form.year" placeholder="如 2024" /></a-form-model-item>
       <a-form-model-item label="摘要"><a-textarea v-model="form.summary" :rows="2" /></a-form-model-item>
@@ -40,6 +51,8 @@ import { ACCESS_TOKEN } from '@/store/mutation-types'
 import Vue from 'vue'
 import { DOC_TYPES, IP_SUB_TYPES } from './DocTypeTagConfig'
 import JDictSelectTag from '@/components/dict/JDictSelectTag'
+import { getAction } from '@/api/manage'
+import { TreeSelect } from 'ant-design-vue'
 
 export default {
   name: 'FileUploadModal',
@@ -58,6 +71,9 @@ export default {
       form: {},
       uploading: false,
       localTagFields: [],
+      techSystemTreeData: [],
+      techSystemValues: [],
+      SHOW_PARENT: TreeSelect.SHOW_PARENT,
     }
   },
   methods: {
@@ -65,9 +81,27 @@ export default {
       this.isZipUpload = !!isZip
       this.fileList = []
       this.form = { docType: this.docType, classificationLevel: '公开' }
+      this.techSystemValues = []
       this.localTagFields = this.getTagFieldsByDocType(this.form.docType)
       this.localTagFields.forEach(tf => { this.$set(this.form, tf.field, undefined) })
+      this.loadTechSystemTree()
       this.visible = true
+    },
+    loadTechSystemTree() {
+      getAction('/sys/category/loadTreeRoot', { pcode: 'C01', async: false }).then(res => {
+        if (res.success && res.result) {
+          this.techSystemTreeData = this.formatTreeNodes(res.result)
+        }
+      })
+    },
+    formatTreeNodes(nodes) {
+      if (!nodes) return []
+      return nodes.map(n => ({
+        title: n.title || n.name,
+        value: n.key || n.id,
+        key: n.key || n.id,
+        children: n.children ? this.formatTreeNodes(n.children) : [],
+      }))
     },
     getTagFieldsByDocType(docType) {
       if (!docType) return []
@@ -93,8 +127,12 @@ export default {
       formData.append('file', this.fileList[0])
       formData.append('folderId', this.folderId)
       Object.keys(this.form).forEach(key => {
+        if (key === 'techSystem') return // handled separately
         if (this.form[key] !== undefined && this.form[key] !== null && this.form[key] !== '') formData.append(key, this.form[key])
       })
+      if (this.techSystemValues && this.techSystemValues.length > 0) {
+        formData.append('techSystem', this.techSystemValues.join(','))
+      }
       let baseUrl = window._CONFIG && window._CONFIG['domianURL'] ? window._CONFIG['domianURL'] : ''
       let token = Vue.ls.get(ACCESS_TOKEN) || ''
       let url = baseUrl + (this.isZipUpload ? '/minio/file/uploadZip' : '/minio/file/upload')
